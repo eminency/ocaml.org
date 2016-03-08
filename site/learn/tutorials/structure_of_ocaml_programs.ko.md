@@ -4,17 +4,15 @@
 
 # OCaml 프로그램의 구조
 
-Now we're going to take some time out to take a high-level look at some
-real OCaml programs. I want to teach you about local and global
-definitions, when to use `;;` vs. `;`, modules, nested functions, and
-references. For this we're going to look at a lot of OCaml concepts
-which won't yet make sense because we haven't seen them before. Don't
-worry about the details for the moment. Concentrate instead on the
-overall shape of the programs and the features which I'll point out.
+이제 고차원적인 관점에서 실제 OCaml 프로그램을 살펴 보는 것에 시간을 투자해 볼 것이다. 여기서는
+지역(local)과 전역(global)의 정의, 언제 `;;`나 `;`를 쓰는지, 모듈, 중첩 함수(nested function),
+참조(reference) 등에 대해 설명할 생각이다. 이것들을 위해 이전에 본 적이 없어서 이해가 가지 않을 만한
+여러 가지 OCaml 개념들부터 살펴보겠다. 아직은 세세한 것에 대해 신경쓰지 않도록 한다. 대신 프로그램의 전체적인
+형태와 내가 설명할 기능들에만 집중하기 바란다.
 
-##  지역 "변수(variables)" (*really* local expressions)
-Let's take the `average` function and add a local variable in C.
-(Compare it to the first definition we had above).
+##  지역 "변수(variables)" (*실제로는* 지역 표현식(local expressions))
+C에서 `average` 함수를 만들고 여기에 지역 변수를 하나 추가해 보자.
+(앞에서 정의했던 것과 비교해 보기 바란다).
 
 ```C
 double average (double a, double b)
@@ -23,31 +21,27 @@ double average (double a, double b)
   return sum / 2;
 }
 ```
-Now let's do the same to our OCaml version:
+이제 동일한 함수를 OCaml 버전으로 만들어 보자:
 
 ```ocamltop
 let average a b =
   let sum = a +. b in
   sum /. 2.0;;
 ```
-The standard phrase `let name = expression in` is used to define a named
-local expression, and `name` can then be used later on in the function
-instead of `expression`, till a `;;` which ends the block of code.
-Notice that we don't indent after the `in`. Just think of `let ... in`
-as if it were a statement.
+표준 구문인 `let name = expression in`이 이름 붙은 지역 표현식(names local exprssion)을
+정의하는 데에 사용되었으며 `name`은 이후에 `expression`을 대신하여 코드 블록 끝에 `;;`가 오기
+전까지 함수 안에서 쓰일 수 있다. `in` 다음에 들여쓰기를 하지 않았음을 유의하라. 그냥 일반적인 영어
+문장인 것처럼 `let ... in`을 쓴다고 생각하면 된다.
 
-Now comparing C local variables and these named local expressions is a
-sleight of hand. In fact they are somewhat different. The C variable
-`sum` has a slot allocated for it on the stack. You can assign to `sum`
-later in the function if you want, or even take the address of `sum`.
-This is NOT true for the OCaml version. In the OCaml version, `sum` is
-just a shorthand name for the expression `a +. b`. There is no way to
-assign to `sum` or change its value in any way. (We'll see how you can
-do variables whose value changes in a minute).
+이제 C 지역 변수와 이름 붙은 지역 표현식을 비교해 보는 것은 손바닥 뒤집기이다. 사실 이것들은
+약간 다르긴 하다. C 변수 `sum`은 스택에 변수를 위해 할당된 공간을 갖는다. 원한다면 나중에 `sum`에
+다른 값을 넣을 수도 있고 `sum`이 있는 곳의 주소를 가져올 수도 있다. 이는 OCaml 버전에서는
+불가능하다. OCaml 버전에서의 `sum`은 단순히 `a +. b`라는 표현식을 가리키는 축약된 이름일 뿐이다. 
+`sum`에 값을 집어 넣거나 변경하는 수단은 존재하지 않는다. (어떻게 변수가 값을 바꿀 수 있는 지는
+나중에 볼 것이다).
 
-Here's another example to make this clearer. The following two code
-snippets should return the same value (namely (a+b) +
-(a+b)²):
+이를 명백히 확인할 수 있는 다른 예제가 있다. 아래의 두가지 코드는 동일한 값을 리턴해야 한다
+(즉 (a+b) + (a+b)²):
 
 ```ocamltop
 let f a b =
@@ -60,15 +54,12 @@ let f a b =
   ;;
 ```
 
-The second version might be faster (but most compilers ought to be able
-to perform this step of "common subexpression elimination" for you), and
-it is certainly easier to read. `x` in the second example is just
-shorthand for `a +. b`.
+두번째 버전이 보통 훨씬 빠르며(하지만 대부분의 컴파일러들은 "공통 하부식 제거"를 수행해야 할 것이다)
+확실히 눈에도 더 잘 들어온다. 두번째 예제의 `x`는 단순히 `a +. b`의 약칭이 되는 것이다.
 
 ##  전역 "변수(variables)" (*really* global expressions)
-You can also define global names for things at the top level, and as
-with our local "variables" above, these aren't really variable at all,
-just shorthand names for things. Here's a real (but cut-down) example:
+당신은 또한 위에서 얘기한 지역 "변수들"에 대해 최상위 레벨에서 쓰기 위한 전역 이름을 정의하는 것이 가능하다.
+하지만 이들은 실제로는 전혀 변수가 아니며 그것들을 가리키는 이름에 불과하다. 아래에 실제(생략 됐지만) 예제가 있다.  
 
 ```ocaml
 let html =
@@ -83,22 +74,18 @@ let menu_bold () =
   ;;
 
 let main () =
-  (* code omitted *)
+  (* 코드 생략 *)
   factory#add_item "Cut" ~key:_X ~callback: html#cut
   ;;
 ```
 
-In this real piece of code, `html` is an HTML editing widget (an object
-from the lablgtk library) which is created once at the beginning of the
-program by the first `let html =` statement. It is then referred to in
-several later functions.
+이 실제 코드 조각에서 `html`은 HTML 프로그램 시작 부분의 첫 `let html =` 구문에서 
+딱 한 번 생성되는 HTML 편집 위젯이다(lablgtk 라이브러리의 객체). 이는 나중에 여러 함수에서 참조된다.
 
-Note that the `html` name in the code snippet above shouldn't really be
-compared to a real global variable as in C or other imperative
-languages. There is no space allocated to "store" the "`html` pointer".
-Nor is it possible to assign anything to `html`, for example to reassign
-it to point to a different widget. In the next section we'll talk about
-references, which are real variables.
+위 코드 예제의 `html`이란 이름은 실제로 C나 다른 명령형 언어에서의 실제 전역 변수와는 결코 비교할
+수 있는 대상은 아니다. "`html` 포인터"를 "저장"하기 위한 공간은 할당되지 않는다. 게다가 `html`에
+다른 무언가, 예를 들면 다른 위젯을 가리키도록 집어 넣는 것도 불가능하다. 다음 섹션에서 실제 변수인
+참조에 대해서 얘기할 것이다.
 
 ## Let-바인딩
 Any use of `let ...`, whether at the top level (globally) or within a
